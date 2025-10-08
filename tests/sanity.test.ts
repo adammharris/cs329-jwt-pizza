@@ -8,22 +8,22 @@ test("has title", async ({ page }) => {
 
 test("docs page", async ({ page }) => {
   await page.goto("/docs");
-  expect(await page.getByText("JWT Pizza API")).toBeVisible();
+  await expect(page.getByText("JWT Pizza API")).toBeVisible();
 });
 
 test("history page", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "History" }).click();
-  expect(await page.getByText("Mama Rucci, my my")).toBeVisible();
+  await expect(page.getByText("Mama Rucci, my my")).toBeVisible();
 });
 
 test("about page", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "About" }).click();
-  expect(await page.getByText("The secret sauce")).toBeVisible();
+  await expect(page.getByText("The secret sauce")).toBeVisible();
 });
 
 test("not found page", async ({ page }) => {
   await page.goto("/bad/path");
-  expect(await page.getByText("Oops")).toBeVisible();
+  await expect(page.getByText("Oops")).toBeVisible();
 });

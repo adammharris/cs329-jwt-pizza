@@ -131,6 +131,15 @@ test("login", async ({ page }) => {
 test("purchase with login", async ({ page }) => {
   await basicInit(page);
 
+  await page.route("*/**/api/order/verify", async (route) => {
+    await route.fulfill({
+      json: {
+        message: "valid",
+        payload: { status: "fresh", size: "large" },
+      },
+    });
+  });
+
   // Go to order page
   await page.getByRole("button", { name: "Order now" }).click();
 
@@ -161,9 +170,90 @@ test("purchase with login", async ({ page }) => {
   // Check balance
   await expect(page.getByText("0.008")).toBeVisible();
 
+  await page.waitForURL("**/delivery");
   await expect(
     page.getByRole("heading", { name: "Here is your JWT Pizza!" })
   ).toBeVisible();
+
+  const verifyButton = page.getByRole("button", { name: "Verify" });
+  const waitForVerifyResponse = () =>
+    page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        response.url().includes("/api/order/verify")
+    );
+
+  let verifyResponsePromise = waitForVerifyResponse();
+  await verifyButton.click();
+  await verifyResponsePromise;
+
+  const modal = page.locator("#hs-jwt-modal");
+  await expect(modal).toContainText("valid");
+});
+
+test("delivery verify handles invalid token", async ({ page }) => {
+  await basicInit(page);
+
+  await page.route("*/**/api/order/verify", async (route) => {
+    await route.fulfill({
+      status: 400,
+      json: { message: "invalid token" },
+    });
+  });
+
+  await page.goto("/delivery");
+  await expect(
+    page.getByRole("heading", { name: "Here is your JWT Pizza!" })
+  ).toBeVisible();
+
+  const verifyButton = page.getByRole("button", { name: "Verify" });
+  const verifyResponsePromise = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().includes("/api/order/verify")
+  );
+  await verifyButton.click();
+  await verifyResponsePromise;
+
+  const modal = page.locator("#hs-jwt-modal");
+  await expect(modal).toContainText("invalid");
+});
+
+test("docs page renders secured endpoints", async ({ page }) => {
+  await basicInit(page);
+
+  await page.route("*/**/api/docs", async (route) => {
+    await route.fulfill({
+      json: {
+        endpoints: [
+          {
+            method: "GET",
+            path: "/api/ping",
+            description: "Health check",
+            example: "curl /api/ping",
+            response: { ok: true },
+            requiresAuth: false,
+          },
+          {
+            method: "POST",
+            path: "/api/secure",
+            description: "Secured endpoint",
+            example: "curl -X POST /api/secure",
+            response: { ok: true },
+            requiresAuth: true,
+          },
+        ],
+      },
+    });
+  });
+
+  await page.goto("/docs/service");
+  await expect(
+    page.getByRole("heading", { name: "JWT Pizza API" })
+  ).toBeVisible();
+  await expect(page.locator("body")).toContainText("Health check");
+  await expect(page.locator("body")).toContainText("Secured endpoint");
+  await expect(page.locator("body")).toContainText("🔐");
 });
 
 test("logout", async ({ page }) => {
