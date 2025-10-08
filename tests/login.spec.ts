@@ -160,6 +160,10 @@ test("purchase with login", async ({ page }) => {
 
   // Check balance
   await expect(page.getByText("0.008")).toBeVisible();
+
+  await expect(
+    page.getByRole("heading", { name: "Here is your JWT Pizza!" })
+  ).toBeVisible();
 });
 
 test("logout", async ({ page }) => {
