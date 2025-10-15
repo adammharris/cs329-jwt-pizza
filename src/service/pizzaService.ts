@@ -1,12 +1,16 @@
 enum Role {
-  Diner = 'diner',
-  Franchisee = 'franchisee',
-  Admin = 'admin',
+  Diner = "diner",
+  Franchisee = "franchisee",
+  Admin = "admin",
 }
 
 namespace Role {
   export function isRole(user: User | null, role: Role): boolean {
-    return user != null && Array.isArray(user.roles) && !!user.roles.find((r) => r.role === role);
+    return (
+      user != null &&
+      Array.isArray(user.roles) &&
+      !!user.roles.find((r) => r.role === role)
+    );
   }
 }
 
@@ -76,6 +80,11 @@ type FranchiseList = {
   more: boolean;
 };
 
+type UserList = {
+  users: User[];
+  more: boolean;
+};
+
 type Endpoint = {
   requiresAuth: boolean;
   method: string;
@@ -105,12 +114,35 @@ interface PizzaService {
   verifyOrder(jwt: string): Promise<JWTPayload>;
   getFranchise(user: User): Promise<Franchise[]>;
   createFranchise(franchise: Franchise): Promise<Franchise>;
-  getFranchises(page: number, limit: number, nameFilter: string): Promise<FranchiseList>;
+  getFranchises(
+    page: number,
+    limit: number,
+    nameFilter: string
+  ): Promise<FranchiseList>;
   closeFranchise(franchise: Franchise): Promise<void>;
   createStore(franchise: Franchise, store: Store): Promise<Store>;
   closeStore(franchise: Franchise, store: Store): Promise<null>;
   docs(docType: string): Promise<Endpoints>;
   updateUser(user: User): Promise<User>;
+  deleteUser(userId: string): Promise<void>;
+  listUsers(): Promise<{ [key: string]: User }>;
 }
 
-export { Role, PizzaService, User, Menu, Pizza, OrderHistory, Order, Franchise, FranchiseList, Store, OrderItem, Endpoint, Endpoints, OrderResponse, JWTPayload };
+export {
+  Role,
+  PizzaService,
+  User,
+  Menu,
+  Pizza,
+  OrderHistory,
+  Order,
+  Franchise,
+  FranchiseList,
+  Store,
+  OrderItem,
+  Endpoint,
+  Endpoints,
+  OrderResponse,
+  JWTPayload,
+  UserList,
+};
