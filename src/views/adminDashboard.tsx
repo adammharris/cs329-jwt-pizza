@@ -32,11 +32,24 @@ export default function AdminDashboard(props: Props) {
   const [userPage, setUserPage] = React.useState(0);
   const filterFranchiseRef = React.useRef<HTMLInputElement>(null);
 
+  const loadUsers = React.useCallback(async () => {
+    const users = await pizzaService.listUsers();
+    const userArray = Object.keys(users).map((key) => users[key]);
+    setUsers({
+      users: userArray.slice(userPage * 10, (userPage + 1) * 10),
+      more: userArray.length > (userPage + 1) * 10,
+    });
+  }, [userPage]);
+
   React.useEffect(() => {
     (async () => {
       setFranchiseList(await pizzaService.getFranchises(franchisePage, 3, "*"));
     })();
   }, [props.user, franchisePage]);
+
+  React.useEffect(() => {
+    loadUsers();
+  }, [loadUsers, props.user]);
 
   function createFranchise() {
     navigate("/admin-dashboard/create-franchise");
@@ -67,15 +80,7 @@ export default function AdminDashboard(props: Props) {
   async function deleteUser(userId: string) {
     await pizzaService.deleteUser(userId);
     setFranchiseList(await pizzaService.getFranchises(franchisePage, 3, "*"));
-  }
-
-  async function listUsers() {
-    const users = await pizzaService.listUsers();
-    const userArray = Object.keys(users).map((key) => users[key]);
-    setUsers({
-      users: userArray.slice(userPage * 10, (userPage + 1) * 10),
-      more: userArray.length > (userPage + 1) * 10,
-    });
+    await loadUsers();
   }
 
   let response = <NotFound />;
@@ -89,7 +94,10 @@ export default function AdminDashboard(props: Props) {
               <div className="-m-1.5 overflow-x-auto">
                 <div className="p-1.5 min-w-full inline-block align-middle">
                   <div className="overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table
+                      aria-label="Franchises"
+                      className="min-w-full divide-y divide-gray-200"
+                    >
                       <thead className="uppercase text-neutral-100 bg-slate-400 border-b-2 border-gray-500">
                         <tr>
                           {[
@@ -234,7 +242,10 @@ export default function AdminDashboard(props: Props) {
               <div className="-m-1.5 overflow-x-auto">
                 <div className="p-1.5 min-w-full inline-block align-middle">
                   <div className="overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table
+                      aria-label="Users"
+                      className="min-w-full divide-y divide-gray-200"
+                    >
                       <thead className="uppercase text-neutral-100 bg-slate-400 border-b-2 border-gray-500">
                         <tr>
                           {["Name", "Email", "Role", "Action"].map((header) => (
@@ -277,17 +288,10 @@ export default function AdminDashboard(props: Props) {
                       </tbody>
                       <tfoot>
                         <tr>
-                            <td
+                          <td
                             colSpan={4}
                             className="text-end text-sm font-medium"
-                            >
-                            <button
-                              type="button"
-                              className="px-2 py-1 mr-2 text-sm font-semibold rounded-lg border border-orange-400 text-orange-400 hover:border-orange-800 hover:text-orange-800"
-                              onClick={listUsers}
-                            >
-                              Load Users
-                            </button>
+                          >
                             <button
                               className="w-12 p-1 text-sm font-semibold rounded-lg border border-transparent bg-white text-grey border-grey m-1 hover:bg-orange-200 disabled:bg-neutral-300 "
                               onClick={() => setUserPage(userPage - 1)}
@@ -302,7 +306,7 @@ export default function AdminDashboard(props: Props) {
                             >
                               »
                             </button>
-                            </td>
+                          </td>
                         </tr>
                       </tfoot>
                     </table>

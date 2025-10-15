@@ -41,15 +41,30 @@ test("listUsers", async ({ page }) => {
   await page.getByRole("button", { name: "Login" }).click();
   await page.getByRole("link", { name: "Admin" }).click();
   // As an admin I can see a list of all users. Each user's name, email, and role is displayed. The list is paginated. The list can be filtered by user name.
-  await expect(page.getByRole("main")).toContainText("Mama Ricci's kitchen");
-  
-  const userRow = page.getByRole("row", {
-    name: /pizza dinerx pizza dinerx user\d+@jwt\.com diner/,
-  });
-  await expect(userRow).toBeVisible();
+  const usersTable = page.getByRole("table", { name: "Users" });
+  await expect(usersTable).toBeVisible();
+
+  const adminRow = usersTable.getByRole("row").filter({ hasText: "a@jwt.com" });
+  await expect(adminRow).toContainText("admin");
+  const paginationControls = usersTable.locator("tfoot");
+  const nextButton = paginationControls.getByRole("button", { name: "»" });
+  const prevButton = paginationControls.getByRole("button", { name: "«" });
+
+  await expect(nextButton).toBeVisible();
+  await expect(prevButton).toBeDisabled();
 });
 
 test("deleteUser", async ({ page }) => {
+  const email = `11user${Math.floor(Math.random() * 10000)}@jwt.com`;
+  await page.goto("/");
+  await page.getByRole("link", { name: "Register" }).click();
+  await page.getByRole("textbox", { name: "Full name" }).fill("pizza diner");
+  await page.getByRole("textbox", { name: "Email address" }).fill(email);
+  await page.getByRole("textbox", { name: "Password" }).fill("diner");
+  await page.getByRole("button", { name: "Register" }).click();
+
+  await page.getByRole("link", { name: "Logout" }).click();
+
   await page.goto("/");
   await page.getByRole("link", { name: "Login" }).click();
   await page.getByRole("textbox", { name: "Email address" }).fill("a@jwt.com");
@@ -58,11 +73,8 @@ test("deleteUser", async ({ page }) => {
   await page.getByRole("link", { name: "Admin" }).click();
 
   //As an admin I can delete any user.
-  const userRow = page.getByRole("row", {
-    name: /pizza dinerx pizza dinerx user\d+@jwt\.com diner/,
-  });
+  const userRow = page.getByRole("row").filter({ hasText: email });
   await expect(userRow).toBeVisible();
   await userRow.getByRole("button", { name: "Delete" }).click();
-  await page.getByRole("button", { name: "Yes, I'm sure" }).click();
   await expect(userRow).toHaveCount(0);
 });
