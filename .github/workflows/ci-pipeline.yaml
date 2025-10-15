@@ -47,16 +47,27 @@ jobs:
         with:
           path: dist/
   deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    steps:
-    - name: Create OIDC token to AWS
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        audience: sts.amazonaws.com
-        aws-region: us-east-1
-        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/${{ secrets.CI_IAM_ROLE }}
-    - name: Push to AWS S3
-      run: |
-        aws s3 cp dist s3://${{ secrets.APP_BUCKET }} --recursive
-        aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION_ID }} --paths "/*"
+      name: Deploy
+      needs: build
+      runs-on: ubuntu-latest
+      permissions:
+        id-token: write
+        contents: read
+
+      steps:
+        - name: Download build artifact
+          uses: actions/download-artifact@v4
+          with:
+            name: dist-files
+            path: dist
+
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/${{ secrets.CI_IAM_ROLE }}
+            aws-region: us-east-1
+
+        - name: Deploy to AWS S3
+          run: |
+            aws s3 sync dist/ s3://${{ secrets.APP_BUCKET }} --delete
+            aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION_ID }} --paths "/*"
