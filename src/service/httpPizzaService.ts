@@ -12,8 +12,8 @@ import {
   JWTPayload,
 } from "./pizzaService";
 
-const pizzaServiceUrl = import.meta.env.VITE_PIZZA_SERVICE_URL;
-const pizzaFactoryUrl = import.meta.env.VITE_PIZZA_FACTORY_URL;
+const pizzaServiceUrl = import.meta.env.VITE_PIZZA_SERVICE_URL || "https://pizza-service.adammharris.me";
+const pizzaFactoryUrl = import.meta.env.VITE_PIZZA_FACTORY_URL || "https://pizza-factory.cs329.click" ;
 
 class HttpPizzaService implements PizzaService {
   async callEndpoint(
