@@ -5,30 +5,52 @@
 I found that my pizza service was vulnerable in several ways:
 
  **Password Brute Force**
+ 
 *Date*: 2025-12-04
+
 *Target*: https://pizza-service.adammharris.me
+
 *Classification*: Identification and Authentication Failures
+
 *Severity*: 3 (High)
+
 *Description*: The pizza service's rate limits are lacking. I can send 1000+ requests without being turned down, making password brute forces relatively simple. The admin account a@jwt.com has a default password.
+
 *Correction*: Introduce rate limits. Change default password.
+
 [Brute Force image](./adammharris-bruteforce.png)
 
 **Misconfigured CORS**
+
 *Date*: 2025-12-04
+
 *Target*: https://pizza-service.adammharris.me
+
 *Classification*: Broken Access Control
+
 *Severity*: 2 (Medium)
+
 *Description*: CORS does not work. I was able to login from a different origin. The response included `access-control-allow-credentials: true` and `access-control-allow-origin: <the invalid origin I used>`.
+
 *Correction*: Fix CORS; only allow https://pizza.adammharris.me
+
 [Misconfigured CORS image](./adammharris-cors.png)
 
+
 **HTTP Request interception**
+
 *Date*: 2025-12-04
+
 *Target*: https://pizza-service.adammharris.me
+
 *Classification*: Injection
+
 *Severity*: 3 (High)
+
 *Description*: Using Burp Suite, I can buy a pizza for 0 BTC via HTTP request interception. The service does not double check the price.
+
 *Correction*: Don't send the price as part of the request at all—prices should be read-only.
+
 [Injection image](./adammarris-injection.png)
 
 ### Self Attack - Kaydance Turner
