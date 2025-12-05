@@ -18,7 +18,7 @@ I found that my pizza service was vulnerable in several ways:
 
 *Correction*: Introduce rate limits. Change default password.
 
-[Brute Force image](./adammharris-bruteforce.png)
+![Brute Force image](./adammharris-bruteforce.png)
 
 **Misconfigured CORS**
 
@@ -34,7 +34,7 @@ I found that my pizza service was vulnerable in several ways:
 
 *Correction*: Fix CORS; only allow https://pizza.adammharris.me
 
-[Misconfigured CORS image](./adammharris-cors.png)
+![Misconfigured CORS image](./adammharris-cors.png)
 
 
 **HTTP Request interception**
@@ -51,7 +51,7 @@ I found that my pizza service was vulnerable in several ways:
 
 *Correction*: Don't send the price as part of the request at all—prices should be read-only.
 
-[Injection image](./adammarris-injection.png)
+![Injection image](./adammarris-injection.png)
 
 ### Self Attack - Kaydance Turner
 Bruteforce password
