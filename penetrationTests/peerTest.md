@@ -54,47 +54,54 @@ I found that my pizza service was vulnerable in several ways:
 ![Injection image](./adammarris-injection.png)
 
 ### Self Attack - Kaydance Turner
-Bruteforce password
-- Penetration Steps
-    1. login with bad password
-    2. go to target -> api -> auth
-    3. right click on PUT request -> send to intruder
-    4. add § around password field
-    5. add common names and blank attack steps
-    6. click attack
-- Result
-    - blank password works
-    - "admin" password works
-- Fix
-    - change password to be stronger
-    - modify code to prevent blank passcodes from working
 
-Allow requests from evil site
-- Penetration Steps
-    1. Go to proxy -> intercept
-    2. enable intercept
-    3. login with password
-    4. in burp suite, forward options request
-    5. in PUT request, modify Origin to be https://pizza.evil-site.click
-    6. press forward again
-    7. turn off intercept
-- Result
-    - Login still works, but now that request is coming from a bad site
-- Fix
-    - Create a whitelist of websites which are allowed to access my api
+**Password Brute Force**
 
-Change Pizza Order price
-- Penetration Steps
-    1. Login and Order Pizza but stop at "Pay now"
-    2. Turn intercept on
-    3. Click "pay now"
-    4. Forward options request
-    5. in PUT order reqest, change price to .0000001
-    6. Forward request and turn off intercept.
-- Results
-    - I just got away with paying .000001 for a pizza
-- Fix
-    - In server code, make so you can only pay required price for pizza.
+*Date*: 2025-12-04
+
+*Target*: https://pizza-service.kaydanceturner.click
+
+*Classification*: Identification and Authentication Failures
+
+*Severity*: 3 (High)
+
+*Description*: The admin, diner, and franchisee accounts all have default passwords which are just the role, making brute force password injection very easy. I also don't even have to guess the password since making it blank lets me in as well. 
+
+*Correction*: Change default password. Modify backend code to not accept empty passwords.
+
+![Brute Force image (after fix)](./kaydanceturner-bruteforce.png)
+
+**Misconfigured CORS**
+
+*Date*: 2025-12-04
+
+*Target*: https://pizza-service.kaydanceturner.click
+
+*Classification*: Broken Access Control
+
+*Severity*: 2 (Medium)
+
+*Description*: Currently any website can access my api. I tested this using `curl -v -H "Origin: https://evil.com" https://pizza-service.kaydanceturner.click` and I got a 200 response back.
+
+*Correction*: Create a whitelist of websites which are allowed to access my api; only allow https://pizza.kaydanceturner.click and local dev.
+
+![Bad request origin](./kaydanceturner-cors.png)
+
+**HTTP Request interception**
+
+*Date*: 2025-12-04
+
+*Target*: https://pizza-service.adammharris.me
+
+*Classification*: Injection
+
+*Severity*: 3 (High)
+
+*Description*: Using Burp Suite, I can buy a pizza for 0 BTC via HTTP request interception. The service does not double check the price.
+
+*Correction*: Don't send the price as part of the request at all—prices should be read-only.
+
+![Injection image](./kaydanceturner-injection.png)
 
 ### Peer Attack - Adam Harris
 
@@ -133,18 +140,47 @@ Overall, the main recommendations I can make are rate limits and changing to a s
 
 ### Peer Attack - Kaydance Turner
 
-bruteforce password
-- Penetration Steps - I typed in "admin" for the password to a@jwt.com and got in. He forgot to change his password!
-- Result - I can now remove all of the franchisess and completely ruin his business.
-- Fix - He should change his admin password to something more difficult to guess
+**Password Brute Force**
 
-Change pizza order price
-- Penetration Steps - I intercepted the pizza order request in burp suite and replaced the price with .000001 bitcoin.
-- Result - I can now buy his pizza for super cheap
-- Fix - compare price to original price to make sure it wasn't changed
+*Date*: 2025-12-04
 
-Sending request from bad site
-- I used curl to send `curl -v -H "Origin: https://evil.com" https://pizza-service.adammharris.me` to his site and got a 200 response back. However, this didn't work for everything. When I sent a bad requests to /api/menu/order, it didn't allow give me a response.
+*Target*: https://pizza-service.adammharris.me
+
+*Classification*: Identification and Authentication Failures
+
+*Severity*: 3 (High)
+
+*Description*: I typed in "admin" for the password to a@jwt.com and got in. He forgot to change his password! I can now remove all of the franchisess and completely ruin his business.
+
+*Correction*: He should change his admin password to something more difficult to guess.
+
+**HTTP Request interception**
+
+*Date*: 2025-12-04
+
+*Target*: https://pizza-service.adammharris.me
+
+*Classification*: Injection
+
+*Severity*: 3 (High)
+
+*Description*: I intercepted the pizza order request in burp suite and replaced the price with .000001 bitcoin. I can now buy his pizza for super cheap.
+
+*Correction*: Don't send the price as part of the request at all—prices should be read-only.
+
+**Misconfigured CORS**
+
+*Date*: 2025-12-04
+
+*Target*: https://pizza-service.adammharris.me
+
+*Classification*: Broken Access Control
+
+*Severity*: 2 (Medium)
+
+*Description*: I used curl to send `curl -v -H "Origin: https://evil.com" https://pizza-service.adammharris.me` to his site and got a 200 response back. However, this didn't work for everything. When I sent a bad requests to /api/menu/order, it didn't allow give me a response.
+
+*Correction*: Create a whitelist of websites which are allowed to access his api.
 
 ### Summary
 
